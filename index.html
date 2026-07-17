@@ -563,7 +563,7 @@
         };
 
         function initApp() {
-            // Load if items exist in localstorage shell, otherwise bootstrap completely empty arrays
+            // Load saved state from localStorage if available
             if (localStorage.getItem("healwish_patients")) {
                 appState.patients = JSON.parse(localStorage.getItem("healwish_patients"));
             } else {
@@ -577,11 +577,50 @@
                 appState.doctors = [];
                 localStorage.setItem("healwish_doctors", JSON.stringify([]));
             }
+
+            loadHealthcareDataFile();
         }
 
         function saveState() {
             localStorage.setItem("healwish_patients", JSON.stringify(appState.patients));
             localStorage.setItem("healwish_doctors", JSON.stringify(appState.doctors));
+        }
+
+        async function loadHealthcareDataFile() {
+            try {
+                const response = await fetch('healthcare_data.txt');
+                if (!response.ok) return;
+                const text = await response.text();
+                parseHealthcareDataFile(text);
+                saveState();
+            } catch (error) {
+                console.warn('Unable to load healthcare_data.txt:', error);
+            }
+        }
+
+        function parseHealthcareDataFile(text) {
+            const lines = text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+            lines.forEach(line => {
+                if (line.startsWith('PATIENT:')) {
+                    const fields = line.slice(8).split('|');
+                    if (fields.length >= 8) {
+                        const [id, name, age, disease, doctor, diagnosis, treatment, prescription] = fields;
+                        const exists = appState.patients.some(p => p.id === id);
+                        if (!exists) {
+                            appState.patients.push({ id, name, age, disease, doctor, diagnosis, treatment, prescription });
+                        }
+                    }
+                } else if (line.startsWith('DOCTOR:')) {
+                    const fields = line.slice(7).split('|');
+                    if (fields.length >= 3) {
+                        const [id, name, specialty] = fields;
+                        const exists = appState.doctors.some(d => d.id === id);
+                        if (!exists) {
+                            appState.doctors.push({ id, name, specialty });
+                        }
+                    }
+                }
+            });
         }
 
         document.getElementById("login-form").addEventListener("submit", function(e) {
