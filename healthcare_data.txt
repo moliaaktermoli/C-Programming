@@ -1,4 +1,0 @@
-PATIENT:1|rifat|22|Fever|Dr. Atoshi|Awaiting Evaluation|Under Review|None
-PATIENT:2|Aira|21|cough|Dr. Nayeem|Awaiting Evaluation|Under Review|None
-PATIENT:4|Nowshin|35|Anemia|Nayeem|Awaiting Evaluation|Under Review|None
-DOCTOR:112|Dr.Tushar|Cardiologist 
